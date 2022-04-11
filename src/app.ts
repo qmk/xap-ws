@@ -21,7 +21,8 @@ app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyReque
     })
     w.on('error', (err) => {
       req.log.error(err)
-      connection.socket.send(err)
+      connection.socket.send(err.toString())
+      process.exit(1)
     })
   })
 })
