@@ -1,11 +1,22 @@
 import { parentPort, isMainThread } from 'worker_threads'
+import HID from 'node-hid'
 
-function process(input: string) {
-  return `${input}666`
+import type { communicationMessage } from '../communication'
+
+function list() {
+  return JSON.stringify(HID.devices())
 }
 
 if (!isMainThread) {
-  parentPort?.on('message', (message) => {
-    parentPort?.postMessage(process(message))
+  parentPort?.on('message', (message: communicationMessage) => {
+    let result
+    switch (message) {
+      case 'list':
+        result = list()
+        break
+      default:
+        result = 'Not implemented'
+    }
+    parentPort?.postMessage(result)
   })
 }
