@@ -13,7 +13,7 @@
     "lint:fix": "yarn lint --fix",
     "test": "tap -J --ts src/**/*.test.ts src/*.test.ts",
     "test:debug": "tap --node-arg=--inspect-brk --no-timeout -J --ts src/**/*.test.ts src/*.test.ts",
-    "test:ci": "yarn test -- --cov --coverage-report=lcovonly",
+    "test:ci": "yarn test -- --cov --coverage-report=lcovonly --no-check-coverage",
     "clean": "rm -rf dist",
     "build": "npx tsc --incremental"
   },
