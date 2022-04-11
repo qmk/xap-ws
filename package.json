@@ -36,7 +36,6 @@
   "dependencies": {
     "fastify": "^3.28.0",
     "fastify-websocket": "^4.2.1",
-    "fastify-ws": "^1.0.3",
     "pino": "^7.10.0"
   }
 }
