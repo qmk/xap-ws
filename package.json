@@ -1,0 +1,42 @@
+{
+  "name": "xap-ws",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:qmk/xap-ws.git",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "prestart": "yarn build",
+    "start": "node -r source-map-support/register dist/app.js",
+    "watch": "nodemon -e ts -L -w ./src --exec \"yarn start\"",
+    "lint": "eslint --ext ts src",
+    "lint:fix": "yarn lint --fix",
+    "test": "tap -J --ts src/**/*.test.ts src/*.test.ts",
+    "test:ci": "yarn test -- --cov --coverage-report=lcovonly",
+    "clean": "rm -rf dist",
+    "build": "npx tsc --incremental"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "@types/tap": "^15.0.6",
+    "@types/ws": "^8.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.18.0",
+    "@typescript-eslint/parser": "^5.18.0",
+    "dotenv": "^16.0.0",
+    "eslint": "^8.13.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.6.2",
+    "source-map-support": "^0.5.21",
+    "tap": "^16.0.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "fastify": "^3.28.0",
+    "fastify-websocket": "^4.2.1",
+    "fastify-ws": "^1.0.3",
+    "pino": "^7.10.0"
+  }
+}
