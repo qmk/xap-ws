@@ -1,13 +1,13 @@
-import { Worker } from 'worker_threads'
-import { join } from 'node:path'
 import fastify from 'fastify'
 import fastifyws from 'fastify-websocket'
+
+import { usb } from './workers/getter'
 
 import type { MessageEvent } from 'ws'
 import type { SocketStream } from 'fastify-websocket'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 
-const w = new Worker(join(__dirname, 'workers/usb.js'))
+const w = usb()
 
 const app = fastify({ logger: true })
 app.register(fastifyws)
