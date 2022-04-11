@@ -7,7 +7,7 @@ import type { Response } from 'light-my-request'
 const { before, test, teardown } = tap
 
 const app = proxyquire('./app', {
-  './workers/getter': {
+  './workers/': {
     usb: Sinon.stub().returns({
       performance: {
         eventLoopUtilization: () => ({})

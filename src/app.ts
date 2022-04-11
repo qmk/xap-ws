@@ -1,7 +1,7 @@
 import fastify from 'fastify'
 import fastifyws from 'fastify-websocket'
 
-import { usb } from './workers/getter'
+import { usb } from './workers/'
 
 import type { MessageEvent } from 'ws'
 import type { SocketStream } from 'fastify-websocket'
