@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyInstance } from 'fastify'
 import fastifyws from 'fastify-websocket'
 
 import { usb } from './workers/'
@@ -28,11 +28,11 @@ app.register(fastifyws, {
   }
 })
 
-app.register(async (fastify) => {
-  fastify.addHook('preValidation', async (request, reply) => {
+app.register(async (fastify: FastifyInstance) => {
+  fastify.addHook('preValidation', async (req: FastifyRequest, reply: FastifyReply) => {
     // verify subprotocol header match
     // disconnect socket if protocol does not match
-    const subprotocol = request.headers['sec-websocket-protocol'] || ''
+    const subprotocol = req.headers['sec-websocket-protocol'] || ''
     if (!validSubprotocols.includes(subprotocol)) {
       await reply.code(400).send('Unsupported Protocol')
     }
