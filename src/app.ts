@@ -14,18 +14,31 @@ const validSubprotocols: string[] = ['XAPWS1']
 const app = fastify({ logger: true })
 app.register(fastifyws, {
   options: {
-    verifyClient: function (info, next) {
-      const subprotocol = info.req.headers['sec-websocket-protocol'] || ''
-      if (!validSubprotocols.includes(subprotocol)) {
-        return next(false) // the connection is not allowed
+    /**
+     * Specify how to format sec-websocket-protocol header on upgrade
+     * @param protocols set of subprotocols from header
+     * @returns subprotocol accepted or false
+     */
+    handleProtocols: (protocols: Set<string>) => {
+      if (protocols.has('XAPWS1')) {
+        return 'XAPWS1'
       }
-      next(true) // the connection is allowed
+      return false
     }
   }
 })
 
 app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
   connection.socket.on('message', (message: MessageEvent) => {
+    // verify subprotocol header match
+    // disconnect socket if protocol does not match
+    const subprotocol = req.headers['sec-websocket-protocol'] || ''
+    if (!validSubprotocols.includes(subprotocol)) {
+      connection.socket.send('Unsupported subprotocol')
+      connection.socket.close()
+      return
+    }
+
     w.postMessage(message.toString())
     w.once('message', (result) => {
       req.log.info(result)
