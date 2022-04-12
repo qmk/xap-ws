@@ -12,8 +12,18 @@ const w = usb()
 const app = fastify({ logger: true })
 app.register(fastifyws)
 
+const validSubprotocols: string[] = ['XAPWS1']
+
 app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
   connection.socket.on('message', (message: MessageEvent) => {
+    // Validate the sub-protocol
+    const subprotocol = req.headers['sec-websocket-protocol'] || ''
+    if (!validSubprotocols.includes(subprotocol)) {
+      connection.socket.send('Unsupported Protocol')
+      connection.socket.close()
+      return
+    }
+
     w.postMessage(message.toString())
     w.once('message', (result) => {
       req.log.info(result)
