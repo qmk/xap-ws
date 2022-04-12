@@ -28,26 +28,27 @@ app.register(fastifyws, {
   }
 })
 
-app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
-  connection.socket.on('message', (message: MessageEvent) => {
+app.register(async (fastify) => {
+  fastify.addHook('preValidation', async (request, reply) => {
     // verify subprotocol header match
     // disconnect socket if protocol does not match
-    const subprotocol = req.headers['sec-websocket-protocol'] || ''
+    const subprotocol = request.headers['sec-websocket-protocol'] || ''
     if (!validSubprotocols.includes(subprotocol)) {
-      connection.socket.send('Unsupported subprotocol')
-      connection.socket.close()
-      return
+      await reply.code(400).send('Unsupported Protocol')
     }
-
-    w.postMessage(message.toString())
-    w.once('message', (result) => {
-      req.log.info(result)
-      connection.socket.send(result)
-    })
-    w.on('error', (err) => {
-      req.log.error(err)
-      connection.socket.send(err.toString())
-      process.exit(1)
+  })
+  fastify.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
+    connection.socket.on('message', (message: MessageEvent) => {
+      w.postMessage(message.toString())
+      w.once('message', (result) => {
+        req.log.info(result)
+        connection.socket.send(result)
+      })
+      w.on('error', (err) => {
+        req.log.error(err)
+        connection.socket.send(err.toString())
+        process.exit(1)
+      })
     })
   })
 })
