@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyInstance } from 'fastify'
 import fastifyws from 'fastify-websocket'
 
 import { usb } from './workers/'
@@ -9,20 +9,46 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 
 const w = usb()
 
-const app = fastify({ logger: true })
-app.register(fastifyws)
+const validSubprotocols: string[] = ['XAPWS1']
 
-app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
-  connection.socket.on('message', (message: MessageEvent) => {
-    w.postMessage(message.toString())
-    w.once('message', (result) => {
-      req.log.info(result)
-      connection.socket.send(result)
-    })
-    w.on('error', (err) => {
-      req.log.error(err)
-      connection.socket.send(err.toString())
-      process.exit(1)
+const app = fastify({ logger: true })
+app.register(fastifyws, {
+  options: {
+    /**
+     * Specify how to format sec-websocket-protocol header on upgrade
+     * @param protocols set of subprotocols from header
+     * @returns subprotocol accepted or false
+     */
+    handleProtocols: (protocols: Set<string>) => {
+      if (protocols.has('XAPWS1')) {
+        return 'XAPWS1'
+      }
+      return false
+    }
+  }
+})
+
+app.register(async (fastify: FastifyInstance) => {
+  fastify.addHook('preValidation', async (req: FastifyRequest, reply: FastifyReply) => {
+    // verify subprotocol header match
+    // disconnect socket if protocol does not match
+    const subprotocol = req.headers['sec-websocket-protocol'] || ''
+    if (!validSubprotocols.includes(subprotocol)) {
+      await reply.code(400).send('Unsupported Protocol')
+    }
+  })
+  fastify.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
+    connection.socket.on('message', (message: MessageEvent) => {
+      w.postMessage(message.toString())
+      w.once('message', (result) => {
+        req.log.info(result)
+        connection.socket.send(result)
+      })
+      w.on('error', (err) => {
+        req.log.error(err)
+        connection.socket.send(err.toString())
+        process.exit(1)
+      })
     })
   })
 })
