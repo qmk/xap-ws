@@ -4,10 +4,12 @@ import fastifyws from 'fastify-websocket'
 import { usb } from './workers/'
 import { IncomingMessageValidate } from './schemas'
 import { tryParse } from './utils'
+import { UnsupportedMessage } from './errors'
+
 import type { MessageEvent } from 'ws'
 import type { SocketStream } from 'fastify-websocket'
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { IncomingMessage } from 'schemas/incoming-message'
+import type { IncomingMessage } from 'schemas/incoming-message'
 
 const w = usb()
 
@@ -19,7 +21,7 @@ app.get('/ws', { websocket: true }, (connection: SocketStream, req: FastifyReque
     const parsed = tryParse<IncomingMessage>(message.toString())
     if (!parsed || !IncomingMessageValidate(JSON.parse(message.toString()))) {
       IncomingMessageValidate.errors && req.log.debug(IncomingMessageValidate.errors)
-      connection.socket.send(JSON.stringify({ error: 'Unsupported message' }))
+      connection.socket.send(new UnsupportedMessage().toString())
       return
     }
     w.postMessage(message.toString())
